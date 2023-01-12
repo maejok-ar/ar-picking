@@ -3,7 +3,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 ox_inventory = exports.ox_inventory
 
 
-local isLoggedIn             = false
+local isLoggedIn             = LocalPlayer.state['isLoggedIn']
 local playerCoords           = nil
 local distanceFromTable = 0
 local distanceFromEntrance   = 0
@@ -26,10 +26,8 @@ end
 -------------  DEBUGGING  --------------
 if Config.Processing.debug.enabled then
     isLoggedIn = true
-    local tick = 0
     Citizen.CreateThread(function()
         while true do
-            tick = tick + 1
             local player = PlayerPedId()
             local coords = GetEntityCoords(player)
             msg = 'PROCESSING'..
@@ -101,7 +99,7 @@ Citizen.CreateThread(function()
     end
 end)
 
--------------  PROCESSING TABLE  --------------
+-------------  Enter / Exit  --------------
 Citizen.CreateThread(function()
     local sleep = 1000
     while true do
