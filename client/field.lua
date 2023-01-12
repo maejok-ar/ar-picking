@@ -130,7 +130,7 @@ if Config.Field.debug.enabled then
 
             ShowDebugText(msg, 0)
 
-            Citizen.Wait(10)
+            Citizen.Wait(5)
         end
     end)
 end
@@ -195,11 +195,12 @@ Citizen.CreateThread(function()
                         SetPedWeaponMovementClipset(ped, "move_ped_crouched", 1.0)
                         SetPedStrafeClipset(ped, "move_ped_crouched_strafing", 1.0)
 
-                        QBCore.Functions.Progressbar("pick_weed_plant", "Harvesting...", 9500, false, true, {
-                            disableMovement = true,
-                            disableCarMovement = true,
+                        local progress_speed = Config.Field.debug.enabled and 1000 or 9500
+                        QBCore.Functions.Progressbar("pick_weed_plant", "Harvesting...", progress_speed, false, true, {
+                            disableMovement = not Config.Field.debug.enabled,
+                            disableCarMovement = not Config.Field.debug.enabled,
                             disableMouse = false,
-                            disableCombat = true,
+                            disableCombat = not Config.Field.debug.enabled,
                         }, {
                             animDict = "amb@world_human_gardener_plant@male@base",
                             anim = "base",
@@ -220,13 +221,15 @@ Citizen.CreateThread(function()
                             SetModelAsNoLongerNeeded(entitymodel)
                             DeleteEntity(closestPlant.entity)
 
+                            ClearPedTasksImmediately(ped)
+                            ClearPedTasks(ped)
                             ResetPedMovementClipset(ped, 0.5)
                             ResetPedWeaponMovementClipset(ped, 0.5)
                             ResetPedStrafeClipset(ped, 0.5)
 
                             table.remove(maturePlants, pickedplant)
 
-                            TriggerServerEvent('ar-weed:server:FinishedPicking')
+                            TriggerServerEvent('ar-picking:server:FinishedPicking')
 
                         end, function() -- Cancel
                             ClearPedTasksImmediately(ped)
