@@ -5,18 +5,22 @@ author 'MAEJOK <https://github.com/maej20>'
 description 'Wild Cannabis Picking and Processing'
 version '1.0.0'
 
+shared_scripts {
+    '@ox_lib/init.lua',
+    'config.lua'
+}
+
 client_scripts {
-    'config.lua',
     'client/field.lua',
     'client/processing.lua',
 }
 server_scripts {
-    'config.lua',
     'server/field.lua',
     'server/processing.lua',
 }
 
 dependencies {
+    'ox_lib',
     'qb-core'
 }
 
