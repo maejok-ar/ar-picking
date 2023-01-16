@@ -19,6 +19,10 @@ server_scripts {
     'server/processing.lua',
 }
 
+files {
+    './locales/*.json'
+}
+
 dependencies {
     'ox_lib',
     'qb-core'

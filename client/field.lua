@@ -1,4 +1,8 @@
+--  DON'T EDIT THESE VARIABLES
 local QBCore = exports['qb-core']:GetCoreObject()
+
+lib.locale()
+
 local isLoggedIn       = LocalPlayer.state['isLoggedIn']
 local maturePlants     = {}
 local immaturePlants   = {}
@@ -11,24 +15,49 @@ local inwater          = "unknown"
 
 
 -----------  Functions  --------------
+
+
+
+local GetClosestPlant = function(plants, playerCoords)
+    if plants == nil then return false end
+
+    local closestPlant = nil
+    local shortestDist = math.huge
+
+    for i, plant in ipairs(plants) do
+		local distance = #(plant.coords - playerCoords)
+        if distance < shortestDist then
+            shortestDist = distance
+            closestPlant = plant
+        end
+    end
+
+	return closestPlant
+end
+
+local HarvestPlant = function(plant)
+    for k, v in pairs(maturePlants) do
+        if v.entity == plant.entity then
+            pickedplant = k
+            break
+        end
+    end
+
+    DeleteEntity(plant.entity)
+    table.remove(maturePlants, pickedplant)
+end
+
 local ClearAllPlants = function()
     for k, v in pairs(maturePlants) do
-        local entitymodel = GetEntityModel(v.entity)
-        SetEntityAsNoLongerNeeded(entitymodel)
-        SetModelAsNoLongerNeeded(entitymodel)
         DeleteEntity(v.entity)
     end
 
     for k, v in pairs(immaturePlants) do
-        local entitymodel = GetEntityModel(v.entity)
-        SetEntityAsNoLongerNeeded(entitymodel)
-        SetModelAsNoLongerNeeded(entitymodel)
         DeleteEntity(v.entity)
     end
 end
 
 local GrowPlants = function()
-    if Config.Field.debug.enabled then QBCore.Functions.Notify("Weed Grown", "success") end
     local plant         = {}
     local entity        = nil
     local coords        = Config.Field.location
@@ -42,7 +71,7 @@ local GrowPlants = function()
 
     local immature_model = GetHashKey(Config.Field.models.immature)
     RequestModel(immature_model)
-    while (not HasModelLoaded(immature_model)) do Citizen.Wait(1) end
+    while (not HasModelLoaded(immature_model)) do Wait(0) end
 
     for i = 1, plant_count, 1 do
         posX = coords.x + math.random(-radius,radius)
@@ -62,7 +91,7 @@ local GrowPlants = function()
             end
 
             RequestModel(plantModel)
-            while (not HasModelLoaded(plantModel)) do Citizen.Wait(1) end
+            while (not HasModelLoaded(plantModel)) do Wait(0) end
             entity = CreateObject(plantModel, posX, posY, posZ, false, false, false)
 
             if Config.Field.chanceMature >= isMature then
@@ -93,26 +122,10 @@ local GrowPlants = function()
         -- end
     ------------------------------------------------
 
+    if Config.Field.debug.enabled then QBCore.Functions.Notify(#(maturePlants) .. ' ' .. locale("has_grown"), "success") end
+
     return maturePlants
 end
-
-local GetClosestPlant = function(plants, playerCoords)
-    if plants == nil then return false end
-
-    local closestPlant = nil
-    local shortestDist = math.huge
-
-    for i, plant in ipairs(plants) do
-		local distance = #(plant.coords - playerCoords)
-        if distance < shortestDist then
-            shortestDist = distance
-            closestPlant = plant
-        end
-    end
-
-	return closestPlant
-end
-
 
 -------------  DEBUGGING  --------------
 if Config.Field.debug.enabled then
@@ -130,14 +143,10 @@ if Config.Field.debug.enabled then
 
             ShowDebugText(msg, 0)
 
-            Citizen.Wait(5)
+            Wait(0)
         end
     end)
 end
-
-
-
-
 
 
 -------------  RANGE/GROW Distance Check  --------------
@@ -171,7 +180,7 @@ end)
 -------------  PICKING  --------------
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(7)
+        Wait(0)
         if inRange then
             local ped          = PlayerPedId()
             local pCoords      = GetEntityCoords(ped)
@@ -183,20 +192,20 @@ Citizen.CreateThread(function()
                 if(#(pCoords - closestPlant.coords) < 1.75)then
 
                     if Config.Field.showPrompts.harvest then
-                        QBCore.Functions.DrawText3D(closestPlant.x, closestPlant.y, closestPlant.z+1, '~g~E~w~  -  Harvest')
+                        QBCore.Functions.DrawText3D(vector3(closestPlant.coords.x, closestPlant.coords.y, closestPlant.coords.z+1), '~g~E~w~  - '..locale("harvest_prompt"))
                     end
 
                     if  not isInVehicle and IsControlJustPressed(0, Keys["E"]) then
                         RequestAnimSet("move_ped_crouched")
                         while not HasAnimSetLoaded("move_ped_crouched") do
-                            Citizen.Wait(0)
+                            Wait(0)
                         end
                         SetPedMovementClipset(ped, "move_ped_crouched", 1.0)
                         SetPedWeaponMovementClipset(ped, "move_ped_crouched", 1.0)
                         SetPedStrafeClipset(ped, "move_ped_crouched_strafing", 1.0)
 
-                        local progress_speed = Config.Field.debug.enabled and 1000 or 9500
-                        QBCore.Functions.Progressbar("pick_weed_plant", "Harvesting...", progress_speed, false, true, {
+                        local progress_speed = Config.Field.debug.enabled and 10 or 9500
+                        QBCore.Functions.Progressbar("pick_weed_plant", locale("harvest_progress"), progress_speed, false, true, {
                             disableMovement = not Config.Field.debug.enabled,
                             disableCarMovement = not Config.Field.debug.enabled,
                             disableMouse = false,
@@ -208,26 +217,13 @@ Citizen.CreateThread(function()
                         }, {}, {}, function() -- Done
 
                             -- remove from plants
-                            local pickedplant = {}
-                            for k, v in pairs(maturePlants) do
-                                if v.entity == closestPlant.entity then
-                                    pickedplant = k
-                                    break
-                                end
-                            end
-
-                            local entitymodel = GetEntityModel(closestPlant.entity)
-                            SetEntityAsNoLongerNeeded(entitymodel)
-                            SetModelAsNoLongerNeeded(entitymodel)
-                            DeleteEntity(closestPlant.entity)
+                            HarvestPlant(closestPlant)
 
                             ClearPedTasksImmediately(ped)
                             ClearPedTasks(ped)
                             ResetPedMovementClipset(ped, 0.5)
                             ResetPedWeaponMovementClipset(ped, 0.5)
                             ResetPedStrafeClipset(ped, 0.5)
-
-                            table.remove(maturePlants, pickedplant)
 
                             TriggerServerEvent('ar-picking:server:FinishedPicking')
 
@@ -237,13 +233,13 @@ Citizen.CreateThread(function()
                             ResetPedMovementClipset(ped, 0.5)
                             ResetPedWeaponMovementClipset(ped, 0.5)
                             ResetPedStrafeClipset(ped, 0.5)
-                            QBCore.Functions.Notify("Canceled..", "error")
+                            QBCore.Functions.Notify(locale("harvest_cancelled"), "error")
                         end)
                     end
                 end
             end
         else
-            Citizen.Wait(10 * 1000)
+            Wait(10 * 1000)
         end
     end
 end)

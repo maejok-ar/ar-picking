@@ -1,0 +1,11 @@
+{
+    "has_grown": "Plants Grown",
+    "harvest_prompt": "Harvest",
+    "harvest_progress": "Harvesting...",
+    "cancelled": "Canceled...",
+    "packaging_weed": "Breaking cannabis up into bags...",
+    "no_item": "You don't have the necessary items!",
+    "do_process": "Process Cannabis",
+    "enter": "Enter",
+    "exit": "Exit"
+}

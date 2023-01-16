@@ -1,13 +1,13 @@
-
 local QBCore = exports['qb-core']:GetCoreObject()
+
 ox_inventory = exports.ox_inventory
+lib.locale()
 
-
-local isLoggedIn             = LocalPlayer.state['isLoggedIn']
-local playerCoords           = nil
-local distanceFromTable = 0
-local distanceFromEntrance   = 0
-local distanceFromExit       = 0
+local isLoggedIn           = LocalPlayer.state['isLoggedIn']
+local playerCoords         = nil
+local distanceFromTable    = 0
+local distanceFromEntrance = 0
+local distanceFromExit     = 0
 
 
 -------------  FUNCTIONS  --------------
@@ -56,18 +56,18 @@ Citizen.CreateThread(function()
 
             if distanceFromTable < 1.8 then
                 if Config.Processing.showPrompts.process then
-                    QBCore.Functions.DrawText3D(vector3(Config.Processing.locations.table.x, Config.Processing.locations.table.y, Config.Processing.locations.table.z+0.5), '~g~E~w~  -   Process Cannabis')
+                    QBCore.Functions.DrawText3D(vector3(Config.Processing.locations.table.x, Config.Processing.locations.table.y, Config.Processing.locations.table.z+0.5), '~g~E~w~  -  ' .. locale('do_process'))
                 end
                 if IsControlJustPressed(0, Keys["E"]) then
 
                     has_item = ox_inventory:Search('count', 'raw_cannabis')
                     if has_item then
-                        local progress_speed = Config.Field.debug.enabled and Config.Processing.taskLength or Config.Processing.taskLength*1000
-                        QBCore.Functions.Progressbar("pick_weed_plant", "Breaking cannabis up into bags", progress_speed, false, true, {
-                            disableMovement = not Config.Field.debug.enabled,
-                            disableCarMovement = not Config.Field.debug.enabled,
+                        local progress_speed = Config.Processing.debug.enabled and 10 or Config.Processing.taskLength*1000
+                        QBCore.Functions.Progressbar("pick_weed_plant", locale('packaging_weed'), progress_speed, false, true, {
+                            disableMovement = not Config.Processing.debug.enabled,
+                            disableCarMovement = not Config.Processing.debug.enabled,
                             disableMouse = false,
-                            disableCombat = not Config.Field.debug.enabled,
+                            disableCombat = not Config.Processing.debug.enabled,
                         }, {
                             animDict = "anim@amb@business@weed@weed_sorting_seated@",
                             anim = "sorter_right_sort_v3_sorter02",
@@ -87,10 +87,10 @@ Citizen.CreateThread(function()
                             ResetPedMovementClipset(ped, 0.5)
                             ResetPedWeaponMovementClipset(ped, 0.5)
                             ResetPedStrafeClipset(ped, 0.5)
-                            QBCore.Functions.Notify("Canceled..", "error")
+                            QBCore.Functions.Notify(locale('cancelled'), "error")
                         end)
                     else
-                        QBCore.Functions.Notify("You don't have the necessary items!", "error")
+                        QBCore.Functions.Notify(locale('no_item'), "error")
                     end
                 end
             end
@@ -127,7 +127,7 @@ Citizen.CreateThread(function()
 
             if distanceFromExit < 1.2 then
                 if Config.Processing.showPrompts.enter then
-                    QBCore.Functions.DrawText3D(vector3(outCoords.x, outCoords.y, outCoords.z+0.5), '~g~E~w~  -  Enter')
+                    QBCore.Functions.DrawText3D(vector3(outCoords.x, outCoords.y, outCoords.z+0.5), '~g~E~w~  -  ' .. locale('enter'))
                 end
                 if IsControlJustReleased(0, Keys["E"]) then
                     SetEntityCoords(ped, inCoords.x, inCoords.y, inCoords.z, true)
@@ -140,7 +140,7 @@ Citizen.CreateThread(function()
             elseif distanceFromEntrance < 1.2 then
 
                 if Config.Processing.showPrompts.exit then
-                    QBCore.Functions.DrawText3D(vector3(inCoords.x, inCoords.y, inCoords.z+0.5), '~g~E~w~  -  Exit')
+                    QBCore.Functions.DrawText3D(vector3(inCoords.x, inCoords.y, inCoords.z+0.5), '~g~E~w~  - ' .. locale('exit'))
                 end
                 if IsControlJustReleased(0, Keys["E"]) then
                     SetEntityCoords(ped, outCoords.x, outCoords.y, outCoords.z, true)
