@@ -1,10 +1,13 @@
-
 local QBCore = exports['qb-core']:GetCoreObject()
-local isLoggedIn             = false
-local playerCoords           = nil
-local distanceFromTable = 0
-local distanceFromEntrance   = 0
-local distanceFromExit       = 0
+
+ox_inventory = exports.ox_inventory
+lib.locale()
+
+local isLoggedIn           = LocalPlayer.state['isLoggedIn']
+local playerCoords         = nil
+local distanceFromTable    = 0
+local distanceFromEntrance = 0
+local distanceFromExit     = 0
 
 
 -------------  FUNCTIONS  --------------
@@ -23,10 +26,8 @@ end
 -------------  DEBUGGING  --------------
 if Config.Processing.debug.enabled then
     isLoggedIn = true
-    local tick = 0
     Citizen.CreateThread(function()
         while true do
-            tick = tick + 1
             local player = PlayerPedId()
             local coords = GetEntityCoords(player)
             msg = 'PROCESSING'..
@@ -55,38 +56,42 @@ Citizen.CreateThread(function()
 
             if distanceFromTable < 1.8 then
                 if Config.Processing.showPrompts.process then
-                    QBCore.Functions.DrawText3D(Config.Processing.locations.table.x, Config.Processing.locations.table.y, Config.Processing.locations.table.z+0.5, '~g~E~w~  -   Process Cannabis')
+                    QBCore.Functions.DrawText3D(vector3(Config.Processing.locations.table.x, Config.Processing.locations.table.y, Config.Processing.locations.table.z+0.5), '~g~E~w~  -  ' .. locale('do_process'))
                 end
                 if IsControlJustPressed(0, Keys["E"]) then
-                    QBCore.Functions.TriggerCallback('QBCore:Functions:HasItem', function(hasItem)
-                        if hasItem then
-                            QBCore.Functions.Progressbar("pick_weed_plant", "Breaking cannabis up into bags", Config.Processing.taskLength*1000, false, true, {
-                                disableMovement = true,
-                                disableCarMovement = true,
-                                disableMouse = false,
-                                disableCombat = true,
-                            }, {
-                                animDict = "anim@amb@business@weed@weed_sorting_seated@",
-                                anim = "sorter_right_sort_v3_sorter02",
-                                flags = 16,
-                            }, {}, {}, function() -- Done
 
-                                TriggerServerEvent('ar-weed:server:FinishedProcessing')
-                                ClearPedTasksImmediately(ped)
-                                ClearPedTasks(ped)
+                    has_item = ox_inventory:Search('count', 'raw_cannabis')
+                    if has_item then
+                        local progress_speed = Config.Processing.debug.enabled and 10 or Config.Processing.taskLength*1000
+                        QBCore.Functions.Progressbar("pick_weed_plant", locale('packaging_weed'), progress_speed, false, true, {
+                            disableMovement = not Config.Processing.debug.enabled,
+                            disableCarMovement = not Config.Processing.debug.enabled,
+                            disableMouse = false,
+                            disableCombat = not Config.Processing.debug.enabled,
+                        }, {
+                            animDict = "anim@amb@business@weed@weed_sorting_seated@",
+                            anim = "sorter_right_sort_v3_sorter02",
+                            flags = 16,
+                        }, {}, {}, function() -- Done
 
-                            end, function() -- Cancel
-                                ClearPedTasksImmediately(ped)
-                                ClearPedTasks(ped)
-                                ResetPedMovementClipset(ped, 0.5)
-                                ResetPedWeaponMovementClipset(ped, 0.5)
-                                ResetPedStrafeClipset(ped, 0.5)
-                                QBCore.Functions.Notify("Canceled..", "error")
-                            end)
-                        else
-                            QBCore.Functions.Notify("You don't have the necessary items!", "error")
-                        end
-                    end, "raw_cannabis")
+                            TriggerServerEvent('ar-picking:server:FinishedProcessing')
+                            ClearPedTasksImmediately(ped)
+                            ClearPedTasks(ped)
+                            ResetPedMovementClipset(ped, 0.5)
+                            ResetPedWeaponMovementClipset(ped, 0.5)
+                            ResetPedStrafeClipset(ped, 0.5)
+
+                        end, function() -- Cancel
+                            ClearPedTasksImmediately(ped)
+                            ClearPedTasks(ped)
+                            ResetPedMovementClipset(ped, 0.5)
+                            ResetPedWeaponMovementClipset(ped, 0.5)
+                            ResetPedStrafeClipset(ped, 0.5)
+                            QBCore.Functions.Notify(locale('cancelled'), "error")
+                        end)
+                    else
+                        QBCore.Functions.Notify(locale('no_item'), "error")
+                    end
                 end
             end
         end
@@ -94,7 +99,7 @@ Citizen.CreateThread(function()
     end
 end)
 
--------------  PROCESSING TABLE  --------------
+-------------  Enter / Exit  --------------
 Citizen.CreateThread(function()
     local sleep = 1000
     while true do
@@ -105,6 +110,7 @@ Citizen.CreateThread(function()
 
             inCoords = Config.Processing.locations.inside
             outCoords = Config.Processing.locations.outside
+
 
             distanceFromEntrance = #(playerCoords - vector3(inCoords.x, inCoords.y, inCoords.z))
             distanceFromExit = #(playerCoords - vector3(outCoords.x, outCoords.y, outCoords.z))
@@ -121,7 +127,7 @@ Citizen.CreateThread(function()
 
             if distanceFromExit < 1.2 then
                 if Config.Processing.showPrompts.enter then
-                    QBCore.Functions.DrawText3D(outCoords.x, outCoords.y, outCoords.z+0.5, '~g~E~w~  -  Enter')
+                    QBCore.Functions.DrawText3D(vector3(outCoords.x, outCoords.y, outCoords.z+0.5), '~g~E~w~  -  ' .. locale('enter'))
                 end
                 if IsControlJustReleased(0, Keys["E"]) then
                     SetEntityCoords(ped, inCoords.x, inCoords.y, inCoords.z, true)
@@ -134,7 +140,7 @@ Citizen.CreateThread(function()
             elseif distanceFromEntrance < 1.2 then
 
                 if Config.Processing.showPrompts.exit then
-                    QBCore.Functions.DrawText3D(inCoords.x, inCoords.y, inCoords.z+0.5, '~g~E~w~  -  Exit')
+                    QBCore.Functions.DrawText3D(vector3(inCoords.x, inCoords.y, inCoords.z+0.5), '~g~E~w~  - ' .. locale('exit'))
                 end
                 if IsControlJustReleased(0, Keys["E"]) then
                     SetEntityCoords(ped, outCoords.x, outCoords.y, outCoords.z, true)
