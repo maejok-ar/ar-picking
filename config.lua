@@ -1,5 +1,31 @@
 Config = {}
 
+
+Config.Field = {
+    debug = {
+        enabled     = false, -- enable/disable debug data (default: false)
+    },
+    showPrompts = {
+        harvest     = true -- Show prompt at plant to tip off that you can harvest it? (default: true)
+    },
+    radius          = 45.0, -- radius from center of farm we want these plants to be able to grow - MUST BE A FLOAT! (default: 45.0)
+    plantsToGrow    = 40, -- how many total plants are we going to grow? This include immature plants (default: 40)
+    chanceMature    = 75,  -- what are the odds (75%) of the plant being immature (unpickable) vs mature (pickable)? (default: 75)
+    location        = vector3(290.19, 4316.75, 46.92), -- vector3 coords for center of the farm location (default: vector3(290.19, 4316.75, 46.92))
+    growDistance    = 200, -- how far away from the field should the grow funciton run? (default: 200)
+    models = {
+        mature      = "prop_weed_01", -- grown and ready to pick
+        -- mature     = "v_res_d_dildo_f",
+        -- mature     = "h4_prop_weed_01_plant", -- grown and ready to pick (from island DLC)
+        immature    = "prop_weed_02", -- not ready to pick
+        -- immature   = "v_res_d_dildo_f"
+    },
+    reward = {          -- how many raw cannabis does the player get from each plant picked?
+        min         = 1,
+        max         = 3
+    },
+}
+
 Config.Processing = {
     debug = {
         enabled     = false, -- enable/disable debug data (default: false)
@@ -15,32 +41,6 @@ Config.Processing = {
         outside     = vector4(-595.15, -1653.05, 20.63, 144.5),
         inside      = vector4(1066.04, -3183.46, -39.16, 94.64),
     }
-}
-
-
-Config.Field = {
-    debug = {
-        enabled     = false, -- enable/disable debug data (default: false)
-    },
-    showPrompts = {
-        harvest     = false -- Show prompt at plant to tip off that you can harvest it? (default: true)
-    },
-    radius          = 45.0, -- radius from center of farm we want these plants to be able to grow - MUST BE A FLOAT! (default: 45.0)
-    plantsToGrow    = 40, -- how many plants are we going to grow? (default: 40)
-    chanceMature    = 75,  -- what % of the plants do we want pickable vs not? (default: 75)
-    location        = vector3(290.19, 4316.75, 46.92), -- vector3 coords for center of the farm location (default: vector3(290.19, 4316.75, 46.92))
-    growDistance    = 200, -- how far away from the field should the grow funciton run? (default: 200)
-    models = {
-        mature      = "prop_weed_01", -- grown and ready to pick
-        -- mature     = "v_res_d_dildo_f",
-        -- mature     = "h4_prop_weed_01_plant", -- grown and ready to pick (from island DLC)
-        immature    = "prop_weed_02", -- not ready to pick
-        -- immature   = "v_res_d_dildo_f"
-    },
-    reward = {          -- how many raw cannabis does the player get from each plant picked?
-        min         = 1,
-        max         = 3
-    },
 }
 
 Keys = {
